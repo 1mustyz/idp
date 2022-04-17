@@ -25,6 +25,7 @@ cloudinary.config({
 
 // staff registration controller
 exports.registerRefugee = async (req, res, next) => {
+  
     try {
 
       //create the user instance
@@ -180,7 +181,7 @@ exports.loginAdmin = (req, res, next) => {
 exports.findAllRefugee = async (req,res, next) => {
 
   try {
-    const result = await Refugee.find({},{emergencies:0});
+    const result = await Refugee.find({admin:false});
     result.length > 0
     ? res.json({success: true, message: result,})
     : res.json({success: false, message: result,})
@@ -206,63 +207,63 @@ exports.singleRefugee = async (req,res, next) => {
 }
 
 // set profile pic
-// exports.setProfilePic = async (req,res, next) => {
+exports.setProfilePic = async (req,res, next) => {
   
-//   singleUpload(req, res, async function(err) {
-//     if (err instanceof multer.MulterError) {
-//     return res.json(err.message);
-//     }
-//     else if (err) {
-//       return res.json(err);
-//     }
-//     else if (!req.file) {
-//       return res.json({"image": req.file, "msg":'Please select an image to upload'});
-//     }
-//     if(req.file){
+  singleUpload(req, res, async function(err) {
+    if (err instanceof multer.MulterError) {
+    return res.json(err.message);
+    }
+    else if (err) {
+      return res.json(err);
+    }
+    else if (!req.file) {
+      return res.json({"image": req.file, "msg":'Please select an image to upload'});
+    }
+    if(req.file){
 
       
-//         const result = await Company.findOne({username: req.query.username},{_id: 0,image: 1})
+        const result = await Refugee.findOne({username: req.query.username},{_id: 0,image: 1})
         
 
-//         if (result.image != null){
-//           const imageName = result.image.split('/').splice(7)
-//           console.log('-----------------',imageName)
+        if (result.image != null){
+          const imageName = result.image.split('/').splice(7)
+          console.log('-----------------',imageName)
   
-//           cloudinary.v2.api.delete_resources_by_prefix(imageName[0], 
-//           {
-//             invalidate: true,
-//             resource_type: "raw"
-//         }, 
-//           function(error,result) {
-//             console.log(result, error) 
-//           }); 
-//         }
+          cloudinary.v2.api.delete_resources_by_prefix(imageName[0], 
+          {
+            invalidate: true,
+            resource_type: "raw"
+        }, 
+          function(error,result) {
+            console.log(result, error) 
+          }); 
+        }
 
-//       cloudinary.v2.uploader.upload(req.file.path, 
-//         { resource_type: "raw" }, 
-//         async function(error, result) {
-//         console.log('111111111111111111',result, error); 
+      cloudinary.v2.uploader.upload(req.file.path, 
+        { resource_type: "raw" }, 
+        async function(error, result) {
+        console.log('111111111111111111',result, error); 
 
         
-//         await Company.findOneAndUpdate({username: req.query.username},{$set: {image: result.secure_url}})
-//         const editedStaff = await Company.findOne({username: req.query.username},{emergencies:0})
+        await Refugee.findOneAndUpdate({username: req.query.username},{$set: {image: result.secure_url}})
+        const editedRefugee = await Refugee.findOne({username: req.query.username})
         
-//         res.json({success: true,
-//           message: editedStaff,
-//                      },
+        res.json({success: true,
+          message: editedRefugee,
+                     },
         
-//     );
-//         });
+    );
+        });
      
        
-//     }
+    }
        
-//     });
+    });
 
     
         
   
-// }
+}
 
 // edit refugee
 exports.editRefugee = async (req,res,next) => {
@@ -276,156 +277,4 @@ exports.editRefugee = async (req,res,next) => {
   }
 }
 
-
-// /**** Emergencies START HERE     ****//////////////////////////////////////////////
-
-// // get emergencies
-// exports.getEmergencies = async (req,res, next) => {
-//   const {companyId} = req.query
-//   try {
-//     const result = await Company.findOne({username:companyId},{emergencies:1});
-//     res.json({success: true, message: result,})
-    
-//   } catch (error) {
-//     console.log(error)
-    
-//   }
-// }
-
-// // get single emergency
-// exports.getSingleEmergency = async (req,res, next) => {
-//   const {emergencyId} = req.query
-//   try {
-//     const result = await Company.findOne({"emergencies.emergencyId":emergencyId},{emergencies:1});
-//     console.log(result)
-//     const singleEmergency = result.emergencies.filter(emgy => emgy.emergencyId == emergencyId)
-//     res.json({success: true, message: singleEmergency,})
-    
-//   } catch (error) {
-//     console.log(error)
-    
-//   }
-// }
-
-// // delete emergency
-
-// exports.deleteEmergency = async (req,res, next) => {
-//   const {emergencyId} = req.query
-//   try {
-//     const result = await Company.findOne({"emergencies.emergencyId":emergencyId},{emergencies:1});
-//     let singleEmergency = result.emergencies.filter(emgy => emgy.emergencyId == emergencyId)
-//     console.log(singleEmergency[0])
-//     const cDelete = async ()=>{
-
-//       if(singleEmergency[0].image != undefined)  await cloudinaryUplouder.delete(singleEmergency[0].image)
-//       if(singleEmergency[0].audio != undefined)  await cloudinaryUplouder.delete(singleEmergency[0].audio)
-//       if(singleEmergency[0].video != undefined)  await cloudinaryUplouder.delete(singleEmergency[0].video)
-//     }
-//     const myPromise = new Promise(async (resolve, reject) => {
-//       resolve(cDelete())
-//     });
-
-//     myPromise.then( async ()=>{
-//       singleEmergency = await Company.findOneAndUpdate({"emergencies.emergencyId":emergencyId},{$pull:{"emergencies":{"emergencyId":emergencyId}}},{new:true})
-//       res.json({success: true, message: singleEmergency})
-//     })
-    
-//   } catch (error) {
-//     console.log(error)
-    
-//   }
-// }
-
-// exports.removeCompany = async (req,res,next) => {
-//   const {companyId} = req.query;
-//   let result
-//   try {
-
-//     const resultImage = await Company.findOne({"username":companyId})
-//     const deleteAllEmergencies = async () => {
-//       resultImage.emergencies.map(async (emg)=>{
-//         // console.log(emg)
-  
-//         if (emg.image != undefined) await cloudinaryUplouder.delete(emg.image)
-//         if (emg.audio != undefined) await cloudinaryUplouder.delete(emg.audio)
-//         if (emg.video != undefined) await cloudinaryUplouder.delete(emg.video)
-  
-        
-//       })    
-//       if (resultImage.image != null) await cloudinaryUplouder.delete(resultImage.image)
-//     }
-    
-//     const myPromise = new Promise(async (resolve, reject) => {
-//       resolve(deleteAllEmergencies())
-//     });
-
-//     myPromise.then(async ()=>{
-
-//       await Company.findOneAndDelete({"username": companyId})
-//       result = await Company.find({},{_id:0,emergencies:0})
-//       res.json({success: true, message: `Company with the ID ${companyId} has been removed`, result})
-//     })
-   
-    
-
-//   } catch (error) {
-//     console.log(error)
-    
-//   }
-// }
-
-
-
-// // upload medias
-// exports.uploadMedias = async (req,res, next) => {
-//   const {companyId} = req.query
-//   let media = {}
-//   let result
-//   media.emergencyId = randomstring.generate(8)
-//   media.date = new Date()
-//   try {
-//     singleAllMediaUpload(req, res, async function(err) {
-//       // console.log(req.files,req.media)
-//       if (err instanceof multer.MulterError) {
-//       return res.json(err.message);
-//       }
-//       else if (err) {
-//         return res.json(err);
-//       }else if(req.files.length > 0 || req.body.message){
-//         req.files.map(async (file)=>{
-//           if(file.mimetype == 'image/png' || file.mimetype == 'image/jpeg') media.image = file.path
-//           if(file.mimetype == "audio/mp3" || file.mimetype == "audio/mpeg") media.audio = file.path
-//           if(file.mimetype == "video/mp4") media.video = file.path
-//         })
-//         if (req.body.message) media.message = req.body.message
-//         if (req.body.position) media.position = req.body.position
-//         const cUpload = async ()=>{
-  
-//           if(media.image != undefined) media.image = await cloudinaryUplouder.upload(media.image)
-//           if(media.audio != undefined) media.audio = await cloudinaryUplouder.upload(media.audio)
-//           if(media.video != undefined) media.video = await cloudinaryUplouder.upload(media.video)
-//         }
-//         const myPromise = new Promise(async (resolve, reject) => {
-//           resolve(cUpload())
-//         });
-  
-//         myPromise.then(async ()=>{
-//           await Company.findOneAndUpdate({"username":companyId},{$push:{"emergencies":media}},{new:true})
-//           result = await Company.findOne({username:companyId},{emergencies:1})
-//           res.json({success:true,result})
-//         })
-  
-//       }
-  
-         
-//     });
-  
-    
-//   } catch (error) {
-//     console.log(error)
-//   }
-
-        
-  
-// }
 
